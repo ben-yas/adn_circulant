@@ -70,6 +70,7 @@ def format_all_data_as_df(patient_data: dict) -> pd.DataFrame:
     ids_patient = []
 
     for patient_id, data in patient_data.items():
+        patient_id = patient_id.split("\\")[-1]
         for time_point, data in data.items():
             transpose_data.append(transpose_data_one_patient(data))
             ids_patient.append((patient_id, time_point))

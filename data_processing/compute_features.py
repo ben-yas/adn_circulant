@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import List
 import pickle
 import argparse
+import os
 
 import pandas as pd
 from sklearn.model_selection import StratifiedKFold
@@ -38,6 +39,7 @@ def compute_features(data: pd.DataFrame, score: str = 'ratio') -> pd.DataFrame:
 def save_features_and_labesl(X_train: pd.DataFrame, X_test: pd.DataFrame,
                             y_train: pd.Series, y_test: pd.Series,
                             cv_nb: int, folder: Path) -> None:
+    os.makedirs(folder, exist_ok = True)
     pickle.dump(X_train, open(folder / f'X_train_{cv_nb}.pkl', 'wb'))
     pickle.dump(X_test, open(folder / f'X_test_{cv_nb}.pkl', 'wb'))
     pickle.dump(y_train, open(folder / f'y_train_{cv_nb}.pkl', 'wb'))
@@ -56,15 +58,12 @@ def split_data_in_K_folds(features: pd.DataFrame, labels: pd.Series, nb_splits: 
 
 def compute_features_for_all_folds(dataset_filename: str, score: str = 'ratio', label_column: str = 'relapse'):
     nb_splits = 5
-
     data = pd.read_csv(MERGED_DIR / dataset_filename)
     patient_ids_to_remove = get_patient_with_small_timeos(data, MIN_DAYS_DURATION_OBSERVATION)
     patient_ids_to_remove.extend(OUTLIERS_ID)
     data = filter_data(data, patient_ids_to_remove)
-
     labels = data.set_index('patient_id')[label_column]
     features = compute_features(data, score)
-
     split_data_in_K_folds(features, labels, nb_splits)
 
 
